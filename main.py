@@ -44,18 +44,39 @@ class Player:
         self.rotation = 0
         self.x: int = 960
         self.y: int = 1080 - self.height
-        self.id = id
+        self.id: int = id
+        self.rotation: int = 0
+        self.velocity: int = 0
+        self.force: int = 0
+
+        self.jumping: bool = False
 
     def draw(self) -> None:
         screen.blit(self.avatar, (self.x, self.y))
 
+        if self.jumping:
+            if self.force >= 1:
+                self.velocity = -5 + (self.force/2)
+                self.force -= 1
+                self.y -= self.velocity
+
+        if self.y >= 1080-self.height:
+            self.jumping, self.velocity, self.force = False, 0, 0
+            self.y = 1080-self.height
+
+    def jump(self) -> None:
+        if not self.jumping:
+            self.force = 20
+            self.jumping = True
+
 class Text:
     def __init__(self, img, x: int, y: int, id: int = 0) -> None:
         self.img = img
-        self.x = x
-        self.y = y
-        self.width, height = 0, 0
-        self.id = id
+        self.x: int = x
+        self.y: int = y
+        self.width: int = 0
+        self.height: int = 0
+        self.id: int = id
 
     def draw(self) -> None:
         if self.img:
@@ -77,7 +98,7 @@ class StartingScreen(Template):
     def __init__(self, screen, mainPlayer) -> None:
         self.screen = screen
 
-        self.bg1, self.bg2 = SimpleArt(Data.squares1, 0, 0, id=1), SimpleArt(Data.squares2, 1930, 0, id=1)
+        self.bg1, self.bg2 = SimpleArt(Data.squares1, 0, 0, id=1), SimpleArt(Data.squares2, 1920, 0, id=1)
 
         self.objects.extend((self.bg1,
             self.bg2,
@@ -94,6 +115,14 @@ class StartingScreen(Template):
                 obj.x -= 1
                 if obj.x < -1920:
                     obj.x = 1920
+            elif obj.id == 2:
+                obj.x += 7
+                if obj.x > 1920+obj.width:
+                    obj.x = 0-obj.width
+
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_SPACE]:
+            mainPlayer.jump()
 
         return self.response
     
@@ -103,7 +132,7 @@ class StartingScreen(Template):
 
 frames: dict[int, Template] = {0: StartingScreen}
 frameCount: int = 0
-mainPlayer: Player = Player()
+mainPlayer: Player = Player(id=2)
 loadedFrames: list[Template] = [frames[0](screen, mainPlayer)]
 currentFrame: Template = loadedFrames[0]
 
@@ -119,4 +148,4 @@ if __name__ == "__main__":
 
 
         pygame.display.flip()
-        clock.tick(75)
+        clock.tick(100)
