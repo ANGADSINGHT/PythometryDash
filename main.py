@@ -18,7 +18,6 @@ class Data:
 
     # Misc
     FPS: int = 75
-    squares: list = []
 
     # Characters
     default_avatar = pygame.image.load("./characters/default.png")
@@ -26,14 +25,9 @@ class Data:
     # Font Text
     logo = pygame.transform.scale(pygame.image.load("./fontart/logo.png"), (1055,332))
 
-    # Squares
-    @classmethod
-    def load_squares(cls):
-        for i in range(1, 17):
-            setattr(cls, f"square{i}", SimpleArt(pygame.image.load(f"./squares/square{i}.png"), 0, 0, 0, 0, 1))
-        cls.squares.extend(
-            getattr(cls, f"square{i}") for i in range(1, 17)
-        )
+    # Backgrounds
+    squares1 = pygame.image.load("./backgrounds/squares1.png")
+    squares2 = pygame.image.load("./backgrounds/squares2.png")
 
 class modelResponse:
     finished: bool = False
@@ -82,39 +76,24 @@ class SimpleArt:
 class StartingScreen(Template):
     def __init__(self, screen, mainPlayer) -> None:
         self.screen = screen
-        # Square Positions
-        Data.load_squares()
-        Data.square1.xo, Data.square1.yo, Data.square1.width = (0,0, 429)
-        Data.square2.xo, Data.square2.yo, Data.square2.width = (0, 426, 568)
-        Data.square3.xo, Data.square3.yo, Data.square3.width = (0, 793, 443)
-        Data.square4.xo, Data.square4.yo, Data.square4.width = (314, 0, 620)
-        Data.square5.xo, Data.square5.yo, Data.square5.width = (314, 189, 460)
-        Data.square6.xo, Data.square6.yo, Data.square6.width = (312, 675, 461)
-        Data.square7.xo, Data.square7.yo, Data.square7.width = (803, 193, 133)
-        Data.square8.xo, Data.square8.yo, Data.square8.width = (803, 345, 133)
-        Data.square9.xo, Data.square9.yo, Data.square9.width = (808, 498, 644)
-        Data.square10.xo, Data.square10.yo, Data.square10.width = (965, 0, 483)
-        Data.square11.xo, Data.square11.yo, Data.square11.width = (1477, 0, 343)
-        Data.square12.xo, Data.square12.yo, Data.square12.width = (1476, 68, 337)
-        Data.square13.xo, Data.square13.yo, Data.square13.width = (1473, 430, 204)
-        Data.square14.xo, Data.square14.yo, Data.square14.width = (1731, 429, 195)
-        Data.square15.xo, Data.square15.yo, Data.square15.width = (1476, 663, 460)
-        Data.square16.xo, Data.square16.yo, Data.square16.width = (1852, 2, 81)
-        for sqr in Data.squares: sqr.x, sqr.y = sqr.xo, sqr.yo
 
-        self.objects.extend(Data.squares)
-        self.objects.extend((mainPlayer,
+        self.bg1, self.bg2 = SimpleArt(Data.squares1, 0, 0, id=1), SimpleArt(Data.squares2, 1930, 0, id=1)
+
+        self.objects.extend((self.bg1,
+            self.bg2,
+            mainPlayer,
             Text(Data.logo, 432, 0),
         ))
 
     def main(self) -> modelResponse:
         screen.fill(Data.GREENBLUE)
         self.drawObjects()
+        
         for obj in self.objects:
             if obj.id == 1:
                 obj.x -= 1
-            if obj.x <= 0-obj.width:
-                obj.x = 1920 + obj.xo
+                if obj.x < -1920:
+                    obj.x = 1920
 
         return self.response
     
