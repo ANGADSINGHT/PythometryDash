@@ -48,6 +48,7 @@ class Player:
         self.rotation: int = 0
         self.velocity: int = 0
         self.force: int = 0
+        self.what = 0
 
         self.jumping: bool = False
 
@@ -55,19 +56,24 @@ class Player:
         screen.blit(self.avatar, (self.x, self.y))
 
         if self.jumping:
-            if self.force >= 1:
-                self.velocity = -5 + (self.force/2)
-                self.force -= 1
-                self.y -= self.velocity
+            self.what += 1
+            change = self.force / 2 if self.force > 1 else 0
+            gravchange = -2 + change
+            print(gravchange)
+            self.velocity += self.force + -2
+            self.force = change
+            self.y -= self.velocity
+            if self.y > 1067-self.height:
+                self.jumping, self.velocity, self.force  = False, 0, 0
 
-        if self.y >= 1080-self.height:
-            self.jumping, self.velocity, self.force = False, 0, 0
-            self.y = 1080-self.height
+            
+            print(f"[{self.what}]",self.velocity, self.force)
+            # print("Y: {}\nAppForce:{}\nVelocity:{}\nForce:{}\nJumping:{}\nChange:{}\n-------------".format(self.y,appliedForce,self.velocity,self.force,self.jumping,change))
 
     def jump(self) -> None:
         if not self.jumping:
-            self.force = 20
             self.jumping = True
+            self.force = 10
 
 class Text:
     def __init__(self, img, x: int, y: int, id: int = 0) -> None:
