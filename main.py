@@ -45,35 +45,40 @@ class Player:
         self.x: int = 960
         self.y: int = 1080 - self.height
         self.id: int = id
-        self.rotation: int = 0
         self.velocity: int = 0
         self.force: int = 0
         self.what = 0
-
         self.jumping: bool = False
+        self.jump_progress: int = 0
+        self.jump_total_frames: int = 22
+        self.start_rotation: int = 0
 
     def draw(self) -> None:
-        screen.blit(self.avatar, (self.x, self.y))
-
         if self.jumping:
-            self.what += 1
+            if self.jump_progress == 0:
+                self.start_rotation = self.rotation
+            self.jump_progress += 1
+
+            self.rotation = self.start_rotation - int(90 * (self.jump_progress / self.jump_total_frames))
             change = self.force / 2 if self.force > 1 else 0
-            gravchange = -2 + change
-            print(gravchange)
+
             self.velocity += self.force + -2
             self.force = change
             self.y -= self.velocity
-            if self.y > 1067-self.height:
+            if self.y > 1067-self.height or self.jump_progress >= self.jump_total_frames:
                 self.jumping, self.velocity, self.force  = False, 0, 0
-
-            
-            print(f"[{self.what}]",self.velocity, self.force)
-            # print("Y: {}\nAppForce:{}\nVelocity:{}\nForce:{}\nJumping:{}\nChange:{}\n-------------".format(self.y,appliedForce,self.velocity,self.force,self.jumping,change))
+                self.rotation = self.start_rotation + 90
+                self.jump_progress = 0
+        
+        rotated_avatar = pygame.transform.rotate(self.avatar, self.rotation)
+        rect = rotated_avatar.get_rect(center=(self.x + self.width // 2, self.y + self.height // 2))
+        screen.blit(rotated_avatar, rect.topleft)
 
     def jump(self) -> None:
         if not self.jumping:
             self.jumping = True
             self.force = 10
+            self.jump_progress = 0
 
 class Text:
     def __init__(self, img, x: int, y: int, id: int = 0) -> None:
@@ -103,8 +108,9 @@ class SimpleArt:
 class StartingScreen(Template):
     def __init__(self, screen, mainPlayer) -> None:
         self.screen = screen
-
         self.bg1, self.bg2 = SimpleArt(Data.squares1, 0, 0, id=1), SimpleArt(Data.squares2, 1920, 0, id=1)
+        pygame.mixer.music.load("./music/menu.mp3")
+        pygame.mixer.music.play(-1)
 
         self.objects.extend((self.bg1,
             self.bg2,
@@ -115,6 +121,7 @@ class StartingScreen(Template):
     def main(self) -> modelResponse:
         screen.fill(Data.GREENBLUE)
         self.drawObjects()
+        if not mainPlayer.jumping: mainPlayer.jump()
         
         for obj in self.objects:
             if obj.id == 1:
