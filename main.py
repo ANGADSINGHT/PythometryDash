@@ -1,5 +1,4 @@
 import pygame
-import os
 
 pygame.init()
 pygame.display.set_caption("Pythometry Dash")
@@ -14,7 +13,6 @@ class Data:
     SATURATION = 50
     WHITE: tuple[int, int, int] = (255, 255, 255)
     BLACK: tuple[int, int, int] = (0, 0, 0)
-    GREENBLUE: tuple[int, int, int] = (15+SATURATION, 45+SATURATION, 205+SATURATION)
 
     # Misc
     FPS: int = 75
@@ -99,10 +97,11 @@ class SimpleArt:
         self.x = x
         self.y = y
         self.id = id
+        self.sub_rect = pygame.Rect(0, 0, 1920, 1080)
 
     def draw(self):
         if self.img:
-            screen.blit(self.img, (self.x, self.y))
+            screen.blit(self.img, (self.x, self.y), self.sub_rect)
 
 
 class StartingScreen(Template):
@@ -119,9 +118,10 @@ class StartingScreen(Template):
         ))
 
     def main(self) -> modelResponse:
-        screen.fill(Data.GREENBLUE)
         self.drawObjects()
-        if not mainPlayer.jumping: mainPlayer.jump()
+
+        if not mainPlayer.jumping: 
+            mainPlayer.jump()
         
         for obj in self.objects:
             if obj.id == 1:
