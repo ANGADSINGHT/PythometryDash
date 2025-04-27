@@ -67,15 +67,16 @@ class Player(arcade.Sprite):
             self.angle = self.start_rotation - int(90 * (self.jump_progress / self.jump_total_frames))
             change = self.force / 2 if self.force > 1 else 0
 
-            self.velocity += self.force + -2
-            self.force = change
-            self.center_y -= self.velocity
             if self.center_y > SCREEN_HEIGHT - 13 - self.height or self.jump_progress >= self.jump_total_frames:
                 self.jumping = False
                 self.velocity = 0
                 self.force = 0
                 self.angle = self.start_rotation + 90
                 self.jump_progress = 0
+
+            self.velocity += self.force + -2
+            self.force = change
+            self.center_y -= self.velocity
 
     def jump(self) -> None:
         if not self.jumping:
@@ -104,7 +105,7 @@ class SimpleArt:
         )
         arcade.draw_texture_rect(
             texture=self.texture,
-            rect=my_rect
+            rect=my_rect,
         )
 
 
@@ -148,9 +149,6 @@ class StartingScreen(arcade.View):
 
         self.bg1.draw()
         self.bg2.draw()
-        
-        for obj in self.to_update:
-            obj.update()
         self.sprites.draw()
 
         my_rect = arcade.Rect(
@@ -175,7 +173,8 @@ class StartingScreen(arcade.View):
             fps_text.draw()
 
     def on_update(self, delta_time):
-        self.player.update()
+        for obj in self.to_update:
+            obj.update()
 
         if not Data.pmode:
             self.bg1.x -= 1
