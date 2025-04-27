@@ -26,6 +26,10 @@ class Data:
     # Logger Types
     INFO = 1
 
+    # Colors
+    BLACK = arcade.color.BLACK
+    WHITE = arcade.color.WHITE
+
     @classmethod
     def log(cls, type: int, msg: str) -> None:
         if type == cls.INFO:
@@ -40,8 +44,7 @@ class Template:
 
 class Player(arcade.Sprite):
     def __init__(self):
-        super().__init__()
-        self.texture = Data.default_avatar
+        super().__init__("./characters/default.png")
         self.width = 60
         self.height = 60
         self.center_x = SCREEN_WIDTH // 2
@@ -55,6 +58,7 @@ class Player(arcade.Sprite):
         self.start_rotation = 0
 
     def update(self):
+        print(self._position)
         if self.jumping:
             if self.jump_progress == 0:
                 self.start_rotation = self.angle
@@ -78,6 +82,9 @@ class Player(arcade.Sprite):
             self.jumping = True
             self.force = 10
             self.jump_progress = 0
+
+
+player = arcade.Sprite()
 
 class SimpleArt:
     def __init__(self, texture, left: int, right: int, x: int, y: int, bottom: int, top: int, width: int, height: int):
@@ -113,34 +120,38 @@ class Notification:
             self.expired = True
 
     def draw(self):
-        return
-        arcade.draw_text(
-            self.text,
-            10,
-            SCREEN_HEIGHT - 30,
-            Data.WHITE,
-            20,
-            anchor_y="top"
-        )
+        notif = arcade.Text(text=self.text, x=10, y=10, color=Data.WHITE, anchor_y="top")
+        notif.draw()
 
 class StartingScreen(arcade.View):
     def __init__(self):
         super().__init__()
         self.bg1 = SimpleArt(Data.squares1, 0, 0, 0, 540, 0, 0, 1920, 1080)
         self.bg2 = SimpleArt(Data.squares2, 0, 1920, 1920, 540, 0, 0, 1920, 1080)
+        self.sprites = arcade.SpriteList()
         self.player = Player()
         self.notifs = []
         self.lagTime = 0
+        self.menu_music = arcade.Sound("./music/menu.mp3")
+        self.music_player = None
+        self.sprites.extend((
+            self.player,
+        ))
+        self.to_update = (self.player,)
 
     def on_show(self):
         arcade.set_background_color(Data.BLACK)
-        arcade.play_sound(arcade.load_sound("./music/menu.mp3"), looping=True)
 
     def on_draw(self):
+        if self.music_player is None or not self.music_player.playing:
+            self.music_player = self.menu_music.play(loop=True)
 
         self.bg1.draw()
         self.bg2.draw()
-        # self.player.draw()
+        
+        for obj in self.to_update:
+            obj.update()
+        self.sprites.draw()
 
         my_rect = arcade.Rect(
             left=0,
@@ -155,6 +166,7 @@ class StartingScreen(arcade.View):
         arcade.draw_texture_rect(rect=my_rect, texture=Data.logo)
 
         for notif in self.notifs:
+            notif.update()
             notif.draw()
 
         if SHOW_FPS:
